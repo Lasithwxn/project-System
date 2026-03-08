@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StockSphere – Update User</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0e0f13;
+    --surface: #f5f4f0;
+    --card: #ffffff;
+    --accent: #ff4d00;
+    --accent2: #00c896;
+    --muted: #9b9a96;
+    --border: #e2e1dc;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--surface); color: var(--ink); min-height: 100vh; }
+
+  nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2.5rem; height: 64px; background: var(--ink);
+    position: sticky; top: 0; z-index: 100;
+    animation: slideDown .5s cubic-bezier(.22,1,.36,1);
+  }
+  @keyframes slideDown { from { transform: translateY(-64px); opacity:0; } to { transform: none; opacity:1; } }
+  .nav-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.25rem; color: #fff; letter-spacing: -.02em; text-decoration: none; }
+  .nav-logo span { color: var(--accent); }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a { color: rgba(255,255,255,.55); font-size: .875rem; text-decoration: none; transition: color .2s; }
+  .nav-links a:hover, .nav-links a.active { color: #fff; }
+  .nav-links a.active::after { content:''; position: absolute; bottom: -4px; left:0; right:0; height: 2px; background: var(--accent); border-radius: 2px; }
+  .nav-badge { background: var(--accent); color:#fff; font-size: .7rem; font-weight:700; padding: 2px 8px; border-radius: 99px; text-transform: uppercase; letter-spacing: .04em; }
+
+  .container { max-width: 960px; margin: 0 auto; padding: 2.5rem 2rem; }
+
+  /* BREADCRUMB */
+  .breadcrumb {
+    display: flex; align-items: center; gap: .5rem;
+    font-size: .8rem; color: var(--muted); margin-bottom: 2rem;
+    animation: fadeUp .5s .1s both cubic-bezier(.22,1,.36,1);
+  }
+  @keyframes fadeUp { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform:none; } }
+  .breadcrumb a { color: var(--muted); text-decoration: none; transition: color .2s; }
+  .breadcrumb a:hover { color: var(--ink); }
+  .breadcrumb .sep { opacity: .4; }
+  .breadcrumb .current { color: var(--ink); font-weight: 500; }
+
+  /* LAYOUT */
+  .layout { display: grid; grid-template-columns: 260px 1fr; gap: 1.5rem; }
+
+  /* PROFILE SIDEBAR */
+  .sidebar {
+    animation: fadeUp .6s .15s both cubic-bezier(.22,1,.36,1);
+  }
+  .profile-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 2rem; text-align: center; position: sticky; top: 84px;
+  }
+  .big-avatar {
+    width: 80px; height: 80px; border-radius: 18px;
+    background: var(--ink); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.75rem;
+    margin: 0 auto 1rem;
+    transition: transform .3s cubic-bezier(.22,1,.36,1);
+  }
+  .big-avatar:hover { transform: scale(1.08) rotate(3deg); }
+  .profile-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; }
+  .profile-email { font-size: .8rem; color: var(--muted); margin-top: .25rem; }
+  .profile-role {
+    display: inline-block; margin-top: .875rem; padding: .3rem .875rem;
+    border-radius: 99px; font-size: .7rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .06em;
+    background: rgba(255,77,0,.1); color: var(--accent);
+  }
+  .profile-divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
+  .profile-meta { display: flex; flex-direction: column; gap: .625rem; text-align: left; }
+  .meta-item { display: flex; justify-content: space-between; align-items: center; }
+  .meta-label { font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .meta-val { font-size: .8rem; font-weight: 500; }
+
+  .change-indicator {
+    margin-top: 1rem; padding: .75rem;
+    background: rgba(255,77,0,.06); border: 1px solid rgba(255,77,0,.15);
+    border-radius: 8px; font-size: .75rem; color: var(--accent);
+    display: none;
+  }
+  .change-indicator.show { display: block; }
+  .change-indicator strong { display: block; margin-bottom: .25rem; }
+
+  /* FORM CARD */
+  .form-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 2rem;
+    animation: fadeUp .6s .25s both cubic-bezier(.22,1,.36,1);
+  }
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.5rem; padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-header h2 { font-family: 'Syne', sans-serif; font-size: 1.25rem; font-weight: 700; }
+  .section-header p { font-size: .8rem; color: var(--muted); margin-top: .2rem; }
+  .modified-badge {
+    padding: .3rem .75rem; border-radius: 99px;
+    background: rgba(255,77,0,.1); color: var(--accent);
+    font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+    display: none;
+  }
+  .modified-badge.show { display: block; }
+
+  .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 2rem; }
+  .tab {
+    padding: .875rem 1.5rem; font-size: .875rem; font-weight: 500;
+    cursor: pointer; border-bottom: 2px solid transparent; transition: all .2s;
+    color: var(--muted); margin-bottom: -1px;
+  }
+  .tab:hover { color: var(--ink); }
+  .tab.active { color: var(--ink); border-bottom-color: var(--ink); }
+
+  .tab-panel { display: none; animation: tabFade .3s ease; }
+  .tab-panel.active { display: block; }
+  @keyframes tabFade { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform:none; } }
+
+  .form-grid { display: grid; gap: 1.25rem; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .field { display: flex; flex-direction: column; gap: .4rem; }
+  .field label { font-size: .75rem; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); transition: color .2s; }
+  .field:focus-within label { color: var(--ink); }
+  .field input, .field select, .field textarea {
+    height: 48px; padding: 0 1rem;
+    border: 1.5px solid var(--border); border-radius: 8px;
+    font-family: 'DM Sans', sans-serif; font-size: .9375rem;
+    background: var(--surface); color: var(--ink);
+    transition: border-color .2s, box-shadow .2s, background .2s;
+    outline: none; -webkit-appearance: none; appearance: none;
+  }
+  .field textarea { height: auto; padding: .875rem 1rem; resize: vertical; min-height: 100px; }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--ink); background: var(--card);
+    box-shadow: 0 0 0 4px rgba(14,15,19,.06);
+  }
+  .field input.changed { border-color: var(--accent2); background: rgba(0,200,150,.03); }
+  .field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239b9a96' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; padding-right: 2.5rem; }
+
+  .field .old-val { font-size: .7rem; color: var(--muted); font-style: italic; }
+
+  /* STATUS TOGGLE */
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: .875rem 1rem; border: 1.5px solid var(--border); border-radius: 8px; background: var(--surface); }
+  .toggle-label strong { font-size: .9rem; display: block; }
+  .toggle-label span { font-size: .75rem; color: var(--muted); }
+  .toggle-switch { position: relative; width: 44px; height: 24px; cursor: pointer; }
+  .toggle-switch input { display: none; }
+  .toggle-track { position: absolute; inset: 0; border-radius: 99px; background: var(--border); transition: background .2s; }
+  .toggle-thumb { position: absolute; width: 18px; height: 18px; border-radius: 50%; background: #fff; top: 3px; left: 3px; transition: transform .25s cubic-bezier(.22,1,.36,1), box-shadow .2s; box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+  .toggle-switch input:checked ~ .toggle-track { background: var(--accent2); }
+  .toggle-switch input:checked ~ .toggle-thumb { transform: translateX(20px); }
+
+  /* ROLE PILLS */
+  .role-group { display: flex; gap: .625rem; flex-wrap: wrap; }
+  .role-pill { display: flex; align-items: center; gap: .5rem; padding: .5rem 1rem; border-radius: 99px; border: 1.5px solid var(--border); cursor: pointer; font-size: .8rem; font-weight: 500; transition: all .2s; background: var(--surface); user-select: none; }
+  .role-pill input[type="radio"] { display: none; }
+  .role-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: background .2s; }
+  .role-pill.selected { border-color: var(--ink); background: var(--ink); color: #fff; }
+  .role-pill.selected .dot { background: var(--accent); }
+
+  /* ACTIONS */
+  .form-actions { display: flex; gap: .875rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+  .btn-save { flex:1; height: 50px; border: none; border-radius: 10px; background: var(--ink); color: #fff; font-family: 'Syne', sans-serif; font-weight: 700; font-size: .9375rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: .5rem; transition: all .2s; position: relative; overflow: hidden; }
+  .btn-save::before { content:''; position: absolute; inset:0; background: linear-gradient(90deg,var(--accent2),#00a882); opacity:0; transition: opacity .3s; }
+  .btn-save:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(14,15,19,.2); }
+  .btn-save:hover::before { opacity: 1; }
+  .btn-save span, .btn-save svg { position: relative; z-index:1; }
+  .btn-reset { height: 50px; padding: 0 1.5rem; border: 1.5px solid var(--border); border-radius: 10px; background: transparent; font-family: 'DM Sans', sans-serif; font-size: .9375rem; cursor: pointer; transition: all .2s; }
+  .btn-reset:hover { border-color: var(--ink); }
+  .btn-back { height: 50px; padding: 0 1.5rem; border: none; border-radius: 10px; background: var(--surface); font-family: 'DM Sans', sans-serif; font-size: .9375rem; cursor: pointer; transition: all .2s; text-decoration: none; display: flex; align-items: center; gap: .5rem; color: var(--ink); }
+  .btn-back:hover { background: var(--border); }
+
+  /* SUCCESS */
+  .success-banner {
+    display: none; align-items: center; gap: 1rem;
+    background: rgba(0,200,150,.08); border: 1px solid rgba(0,200,150,.25);
+    border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.5rem;
+    animation: fadeUp .4s cubic-bezier(.22,1,.36,1);
+  }
+  .success-banner.show { display: flex; }
+  .success-banner svg { color: var(--accent2); flex-shrink:0; }
+  .success-banner p { font-size: .875rem; color: #007a5e; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 2rem; right: 2rem; z-index: 300; background: var(--ink); color: #fff; padding: .875rem 1.5rem; border-radius: 10px; font-size: .875rem; display: flex; align-items: center; gap: .75rem; box-shadow: 0 8px 32px rgba(14,15,19,.3); transform: translateY(80px); opacity: 0; transition: transform .4s cubic-bezier(.22,1,.36,1), opacity .4s; }
+  .toast.show { transform: none; opacity: 1; }
+  .t-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent2); }
+
+  @media (max-width: 768px) {
+    .layout { grid-template-columns: 1fr; }
+    .profile-card { position: static; }
+    .form-row { grid-template-columns: 1fr; }
+    nav { padding: 0 1.25rem; }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="nav-logo">Stock<span>Sphere</span></a>
+  <ul class="nav-links">
+    <li><a href="#">Dashboard</a></li>
+    <li><a href="user-list.html" class="active">Users</a></li>
+    <li><a href="#">Inventory</a></li>
+    <li><a href="#">Reports</a></li>
+  </ul>
+  <span class="nav-badge">Admin</span>
+</nav>
+
+<div class="container">
+  <div class="breadcrumb">
+    <a href="#">Dashboard</a>
+    <span class="sep">›</span>
+    <a href="user-list.html">Users</a>
+    <span class="sep">›</span>
+    <span class="current">Edit User</span>
+  </div>
+
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="profile-card">
+        <div class="big-avatar" id="bigAvatar" style="background:#ff4d00">AP</div>
+        <div class="profile-name" id="profileName">Amal Perera</div>
+        <div class="profile-email" id="profileEmail">amal@ss.lk</div>
+        <span class="profile-role" id="profileRole">Admin</span>
+        <div class="profile-divider"></div>
+        <div class="profile-meta">
+          <div class="meta-item"><span class="meta-label">User ID</span><span class="meta-val">#USR-001</span></div>
+          <div class="meta-item"><span class="meta-label">Joined</span><span class="meta-val">Jan 15, 2024</span></div>
+          <div class="meta-item"><span class="meta-label">Last Login</span><span class="meta-val">Today</span></div>
+          <div class="meta-item"><span class="meta-label">Dept.</span><span class="meta-val" id="profileDept">Warehouse</span></div>
+        </div>
+        <div class="change-indicator" id="changeIndicator">
+          <strong>⚡ Unsaved Changes</strong>
+          Some fields have been modified. Remember to save.
+        </div>
+      </div>
+    </div>
+
+    <!-- FORM -->
+    <div class="form-card">
+      <div class="section-header">
+        <div>
+          <h2>Edit User Profile</h2>
+          <p>Changes are saved to <code>users.txt</code> on submit.</p>
+        </div>
+        <span class="modified-badge" id="modifiedBadge">Modified</span>
+      </div>
+
+      <div class="success-banner" id="successBanner">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+        <p><strong>Changes saved!</strong> User profile has been updated in users.txt successfully.</p>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('basic',this)">Basic Info</div>
+        <div class="tab" onclick="switchTab('access',this)">Access & Role</div>
+        <div class="tab" onclick="switchTab('security',this)">Security</div>
+      </div>
+
+      <!-- TAB: BASIC INFO -->
+      <div class="tab-panel active" id="tab-basic">
+        <div class="form-grid">
+          <div class="form-row">
+            <div class="field">
+              <label>First Name</label>
+              <input type="text" id="firstName" value="Amal" oninput="markChanged(this,'Kasun')" />
+              <span class="old-val">Original: Amal</span>
+            </div>
+            <div class="field">
+              <label>Last Name</label>
+              <input type="text" id="lastName" value="Perera" oninput="markChanged(this,'Perera')" />
+              <span class="old-val">Original: Perera</span>
+            </div>
+          </div>
+          <div class="field">
+            <label>Email Address</label>
+            <input type="email" id="email" value="amal@ss.lk" oninput="markChanged(this,'amal@ss.lk'); validateEmail(this)" />
+            <span class="old-val">Original: amal@ss.lk</span>
+          </div>
+          <div class="form-row">
+            <div class="field">
+              <label>Phone Number</label>
+              <input type="tel" id="phone" value="+94 77 123 4567" oninput="markChanged(this,'+94 77 123 4567')" />
+            </div>
+            <div class="field">
+              <label>Employee ID</label>
+              <input type="text" id="empId" value="EMP-001" readonly style="opacity:.5;cursor:not-allowed" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Address</label>
+            <textarea id="address" oninput="markChanged(this,'')">123 Galle Rd, Colombo 03</textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: ACCESS & ROLE -->
+      <div class="tab-panel" id="tab-access">
+        <div class="form-grid">
+          <div class="field">
+            <label>Username</label>
+            <input type="text" id="username" value="amal.p" oninput="markChanged(this,'amal.p')" />
+            <span class="old-val">Original: amal.p</span>
+          </div>
+          <div class="field">
+            <label>Role</label>
+            <div class="role-group" id="roleGroup">
+              <label class="role-pill" onclick="selectRole(this,'Staff')"><input type="radio" name="role" value="staff"><span class="dot"></span>Staff</label>
+              <label class="role-pill" onclick="selectRole(this,'Manager')"><input type="radio" name="role" value="manager"><span class="dot"></span>Manager</label>
+              <label class="role-pill selected" onclick="selectRole(this,'Admin')"><input type="radio" name="role" value="admin" checked><span class="dot"></span>Admin</label>
+            </div>
+          </div>
+          <div class="field">
+            <label>Department</label>
+            <select id="department" onchange="markChanged(this,'Warehouse'); updateDeptPreview()">
+              <option value="Warehouse" selected>Warehouse</option>
+              <option value="Procurement">Procurement</option>
+              <option value="Sales">Sales</option>
+              <option value="IT">IT</option>
+              <option value="Finance">Finance</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Membership Type</label>
+            <select id="membership">
+              <option value="premium" selected>Premium</option>
+              <option value="standard">Standard</option>
+              <option value="guest">Guest</option>
+            </select>
+          </div>
+          <div>
+            <div class="toggle-row">
+              <div class="toggle-label">
+                <strong>Account Active</strong>
+                <span>Allow this user to log in to the system.</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="statusToggle" checked onchange="markChangeGeneral()">
+                <div class="toggle-track"></div>
+                <div class="toggle-thumb"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: SECURITY -->
+      <div class="tab-panel" id="tab-security">
+        <div class="form-grid">
+          <div class="field">
+            <label>New Password</label>
+            <input type="password" id="newPw" placeholder="Leave blank to keep current" oninput="markChangeGeneral()" />
+          </div>
+          <div class="field">
+            <label>Confirm New Password</label>
+            <input type="password" id="confirmPw" placeholder="Re-enter new password" oninput="checkPwMatch()" />
+          </div>
+          <div style="padding:.875rem 1rem; background: rgba(255,77,0,.05); border:1px solid rgba(255,77,0,.12); border-radius:8px; font-size:.8125rem; color: #c94400; line-height:1.6">
+            ⚠️ <strong>Password policy:</strong> Minimum 8 characters. Must include uppercase, number, and special character.
+          </div>
+          <div class="field">
+            <label>Two-Factor Authentication</label>
+            <div class="toggle-row">
+              <div class="toggle-label">
+                <strong>Enable 2FA</strong>
+                <span>Require OTP on login.</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="tfaToggle">
+                <div class="toggle-track"></div>
+                <div class="toggle-thumb"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <a href="user-list.html" class="btn-back">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+          Back
+        </a>
+        <button class="btn-reset" onclick="resetForm()">Reset</button>
+        <button class="btn-save" onclick="saveChanges()">
+          <span>Save Changes</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <span class="t-dot"></span>
+  <span id="toastMsg">Saved!</span>
+</div>
+
+<script>
+  let hasChanges = false;
+
+  function markChanged(el, originalVal) {
+    const changed = el.value !== originalVal;
+    el.classList.toggle('changed', changed);
+    markChangeGeneral();
+  }
+
+  function markChangeGeneral() {
+    hasChanges = true;
+    document.getElementById('changeIndicator').classList.add('show');
+    document.getElementById('modifiedBadge').classList.add('show');
+    updatePreview();
+  }
+
+  function updatePreview() {
+    const fn = document.getElementById('firstName').value;
+    const ln = document.getElementById('lastName').value;
+    const em = document.getElementById('email').value;
+    document.getElementById('profileName').textContent = `${fn} ${ln}`;
+    document.getElementById('profileEmail').textContent = em;
+    document.getElementById('bigAvatar').textContent = `${fn[0]||''}${ln[0]||''}`.toUpperCase();
+  }
+
+  function updateDeptPreview() {
+    document.getElementById('profileDept').textContent = document.getElementById('department').value;
+  }
+
+  function selectRole(pill, name) {
+    document.querySelectorAll('.role-pill').forEach(p=>p.classList.remove('selected'));
+    pill.classList.add('selected');
+    document.getElementById('profileRole').textContent = name;
+    markChangeGeneral();
+  }
+
+  function switchTab(id, el) {
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('tab-'+id).classList.add('active');
+  }
+
+  function validateEmail(el) {
+    const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(el.value);
+    el.style.borderColor = el.value && !valid ? 'var(--accent)' : '';
+  }
+
+  function checkPwMatch() {
+    const np = document.getElementById('newPw').value;
+    const cp = document.getElementById('confirmPw');
+    if (np && cp.value) {
+      cp.style.borderColor = np === cp.value ? 'var(--accent2)' : 'var(--accent)';
+    }
+    markChangeGeneral();
+  }
+
+  function saveChanges() {
+    const np = document.getElementById('newPw').value;
+    const cp = document.getElementById('confirmPw').value;
+    if (np && np !== cp) { showToast('⚠ Passwords do not match.'); return; }
+    document.getElementById('successBanner').classList.add('show');
+    document.getElementById('changeIndicator').classList.remove('show');
+    document.getElementById('modifiedBadge').classList.remove('show');
+    hasChanges = false;
+    document.querySelectorAll('input.changed').forEach(el => el.classList.remove('changed'));
+    showToast('✓ Profile updated in users.txt');
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  function resetForm() {
+    document.getElementById('firstName').value='Amal';
+    document.getElementById('lastName').value='Perera';
+    document.getElementById('email').value='amal@ss.lk';
+    document.getElementById('phone').value='+94 77 123 4567';
+    document.getElementById('address').value='123 Galle Rd, Colombo 03';
+    document.getElementById('username').value='amal.p';
+    document.getElementById('department').value='Warehouse';
+    document.getElementById('newPw').value='';
+    document.getElementById('confirmPw').value='';
+    document.querySelectorAll('input.changed').forEach(el=>el.classList.remove('changed'));
+    document.getElementById('changeIndicator').classList.remove('show');
+    document.getElementById('modifiedBadge').classList.remove('show');
+    document.getElementById('successBanner').classList.remove('show');
+    updatePreview();
+    showToast('Form reset to original values.');
+  }
+
+  function showToast(msg) {
+    const t=document.getElementById('toast'); document.getElementById('toastMsg').textContent=msg;
+    t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000);
+  }
+
+  window.addEventListener('beforeunload', e => {
+    if (hasChanges) { e.preventDefault(); e.returnValue=''; }
+  });
+</script>
+</body>
+</html>
