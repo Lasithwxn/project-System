@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Users</title>
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-white">
+<div class="main p-8 animate-fade-in">
+    <h1 class="text-3xl mb-6">User Management</h1>
+    <a href="/users/new" class="btn mb-4">Add User</a>
+    <form method="get" class="mb-4 grid grid-cols-3 gap-2">
+        <input type="text" name="id" placeholder="User ID" value="[[${searchId}]]" class="input" />
+        <input type="text" name="username" placeholder="Username" value="[[${searchUsername}]]" class="input" />
+        <button type="submit" class="btn">Search</button>
+    </form>
+    <table class="w-full bg-gray-800 rounded">
+        <thead>
+            <tr><th>ID</th><th>Username</th><th>Role</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="u : ${users}" class="hover:bg-gray-700">
+            <td th:text="${u.id}"></td>
+            <td th:text="${u.username}"></td>
+            <td th:text="${u.role}"></td>
+            <td>
+                <a th:href="@{'/users/edit/' + ${u.id}}" class="btn">Edit</a>
+                <a th:href="@{'/users/delete/' + ${u.id}}" class="btn">Delete</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<script src="/js/app.js"></script>
+</body>
+</html>

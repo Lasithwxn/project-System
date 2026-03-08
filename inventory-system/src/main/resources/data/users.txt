@@ -1,0 +1,10 @@
+USR-001|admin|[hashed]|Admin User|admin@inventory.com|ADMIN|2024-01-01
+USR-002|staff01|[hashed]|John Doe|john@inventory.com|STAFF|2024-01-10
+USR-003|jane|[hashed]|Jane Smith|jane@inventory.com|STAFF|2024-01-12
+USR-004|manager|[hashed]|Manager One|manager@inventory.com|ADMIN|2024-01-15
+USR-005|clerk|[hashed]|Clerk Two|clerk@inventory.com|STAFF|2024-01-18
+USR-006|auditor|[hashed]|Auditor|auditor@inventory.com|STAFF|2024-01-20
+USR-007|guest|[hashed]|Guest User|guest@inventory.com|STAFF|2024-01-22
+USR-008|operator|[hashed]|Operator|operator@inventory.com|STAFF|2024-01-25
+USR-009|tech|[hashed]|Tech Support|tech@inventory.com|STAFF|2024-01-28
+USR-010|sales|[hashed]|Sales Rep|sales@inventory.com|STAFF|2024-01-30

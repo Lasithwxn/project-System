@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Login</title>
+    <link href="/css/style.css" rel="stylesheet" />
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center h-screen">
+<div class="card p-8 rounded-lg shadow-lg bg-gray-800 animate-fade-in">
+    <h1 class="text-2xl mb-4">Inventory Login</h1>
+    <form th:action="@{/login}" method="post">
+        <div>
+            <label>Username</label>
+            <input type="text" name="username" class="input" />
+        </div>
+        <div class="mt-4">
+            <label>Password</label>
+            <input type="password" name="password" class="input" />
+        </div>
+        <button type="submit" class="btn mt-6">Sign in</button>
+        <p th:if="${param.error}" class="text-red-500 mt-2">Invalid credentials</p>
+        <p th:if="${param.logout}" class="text-green-500 mt-2">Logged out successfully</p>
+    </form>
+</div>
+<script src="/js/app.js"></script>
+</body>
+</html>
