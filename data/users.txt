@@ -1,0 +1,3 @@
+USR001,admin,admin123,admin@inv.com,ADMIN,ACTIVE,2024-01-01
+USR002,john,john123,john@inv.com,MANAGER,ACTIVE,2024-01-10
+USR003,sara,sara123,sara@inv.com,STAFF,INACTIVE,2024-02-01
